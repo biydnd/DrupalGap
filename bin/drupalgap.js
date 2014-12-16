@@ -7599,7 +7599,16 @@ function drupalgap_field_info_instances_add_to_form(entity_type, bundle,
                     value: default_value,
                     tid: default_tid
                   };
-                  console.log('after set default value name: '+name+' language: '+language+' default value: '+default_value+' default_tid: '+default_tid);
+                  //need to create item content
+                  var item = drupalgap_form_element_item_create(
+                		  name,
+                          form,
+                          language,
+                          delta
+                        );
+                  //merge the default values into the pre existing item on the element.
+                  $.extend(true, form.elements[name][language][delta], item);
+                  
               }
               else{//other fields
             	  if (entity[name][entity_language][delta] &&
