@@ -7586,8 +7586,14 @@ function drupalgap_field_info_instances_add_to_form(entity_type, bundle,
             	  if (entity[name][entity_language][delta] &&
                           typeof entity[name][entity_language][delta].name !== 'undefined'
                         ) { 
-            		  		//separate values with comma
-            		  		default_value = entity[name][entity_language][delta].name; 
+            		  		//separate values with comma, so the last delta value contains all values
+            		  		if(delta > 0 || default_value){
+            		  			default_value += ',';
+            		  		}
+            		  		else if(!default_value){
+            		  			default_value = '';
+            		  		}
+            		  		default_value += entity[name][entity_language][delta].name; 
             		  		default_tid = entity[name][entity_language][delta].tid; 
             	  }
             	// If the default_value is null, set it to an empty string.
