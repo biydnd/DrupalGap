@@ -3838,6 +3838,7 @@ function _drupalgap_form_render_element_item(form, element, variables, item) {
  * @return {Object}
  */
 function drupalgap_form_element_item_create(name, form, language, delta) {
+	
   try {
     // Generate the id for this element field item and set it and
     // some default options onto the element item.
@@ -7583,6 +7584,7 @@ function drupalgap_field_info_instances_add_to_form(entity_type, bundle,
               if(field_info.type == 'taxonomy_term_reference'){
             	//taxonomy tid placehoder
             	  var default_tid = '';
+            	
             	  if (entity[name][entity_language][delta] &&
                           typeof entity[name][entity_language][delta].name !== 'undefined'
                         ) { 
@@ -7605,6 +7607,7 @@ function drupalgap_field_info_instances_add_to_form(entity_type, bundle,
                     value: default_value,
                     tid: default_tid
                   };
+                  
                   //need to create item content
                   var item = drupalgap_form_element_item_create(
                 		  name,
@@ -7614,7 +7617,7 @@ function drupalgap_field_info_instances_add_to_form(entity_type, bundle,
                         );
                   //merge the default values into the pre existing item on the element.
                   $.extend(true, form.elements[name][language][delta], item);
-                  
+                  //console.log('after set default value name: '+name+' language: '+language+' default value: '+default_value+' default_tid: '+default_tid);
               }
               else{//other fields
             	  if (entity[name][entity_language][delta] &&
@@ -11014,8 +11017,9 @@ function taxonomy_field_formatter_view(entity_type, entity, field, instance,
 function taxonomy_field_widget_form(form, form_state, field, instance, langcode,
   items, delta, element) {
   try {
-    items[delta].type = 'hidden';
+    items[delta].type = 'text';
     // Build the widget and attach it to the item.
+    var item_id = items[delta].id;
     var list_id = items[delta].id + '-list';
     var widget = {
       theme: 'item_list',
@@ -11023,26 +11027,28 @@ function taxonomy_field_widget_form(form, form_state, field, instance, langcode,
       attributes: {
         'id': list_id,
         'data-role': 'listview',
-        'data-filter': 'true',
+        //'data-filter': 'true',
         'data-inset': 'true',
-        'data-filter-placeholder': '...'
+        //'data-filter-placeholder': '...'
       },
     };
-    console.log('items[delta].value: '+items[delta].value);
+    console.log('items[delta].id: '+items[delta].id);
     items[delta].children.push(widget);
     // Attach JS to handle the widget's data fetching.
     var machine_name = field.settings.allowed_values[0].vocabulary;
     var vocabulary = taxonomy_vocabulary_machine_name_load(machine_name);
     var vid = vocabulary.vid;
+   
     var js = '<script type="text/javascript">' +
-      '$("#' + list_id + '").on("filterablebeforefilter",' +
-        'function(e, d) {' +
-          '_taxonomy_field_widget_form_autocomplete(' +
-            '"' + items[delta].id + '", ' + vid + ', this, e, d' +
-          ');' +
-        '}' +
-      ');' +
-    '</script>';
+    '$("#' + item_id + '").on("input",' +
+      'function(e) {' +
+        '_taxonomy_field_widget_form_autocomplete(' +
+        '"'+ items[delta].id + '", ' + vid + ', $("#'+list_id+'"), e, this' +
+        ');' +
+      '}' +
+    ');' +
+  '</script>';
+    
     items[delta].children.push({
         markup: js
     });
@@ -11062,20 +11068,38 @@ var _taxonomy_field_widget_form_autocomplete_input = null;
  * @param {Object} data
  */
 function _taxonomy_field_widget_form_autocomplete(id, vid, list, e, data) {
+	console.log('In _taxonomy_field_widget_form_autocomplete id: '+id+' vid: '+vid+' data.value: '+data.value+' list.html(): '+$(list).html());
   try {
     // Setup the vars to handle this widget.
     var $ul = $(list),
-        $input = $(data.input),
-        value = $input.val(),
+        $input = $(data),
+        input_string = data.value,
+        value = data.value,
         html = '';
+      console.log('value: '+value);
     // Save a reference to this text input field. Then attach an on change
     // handler that will set the hidden input's value when the text field
     // changes. Keep in mind, later on we listen for clicks on autocomplete
     // results to populate this same hidden input's field.
     _taxonomy_field_widget_form_autocomplete_input = $input;
+   
     $(_taxonomy_field_widget_form_autocomplete_input).on('change', function() {
         $('#' + id).val($(this).val());
     });
+     
+    var value = input_string;
+    var existing_string = '';
+  //we only want the one after the last comma
+    //set value to be the last term
+    if(input_string && input_string.indexOf(',') > 0 ){
+    	var terms = input_string.split(',');
+        $.each(terms, function(index, term){
+        	value = term;
+        });
+        var end_index = input_string.length - value.length;
+        existing_string = input_string.substring(0, end_index);
+    }
+    
     // Clear the list, then set up its input handlers.
     $ul.html('');
     if (value && value.length > 0) {
@@ -11097,7 +11121,8 @@ function _taxonomy_field_widget_form_autocomplete(id, vid, list, e, data) {
                     onclick: '_taxonomy_field_widget_form_click(' +
                       "'" + id + "', " +
                       "'" + $ul.attr('id') + "', " +
-                      'this' +
+                      "this," +
+                      "'"+existing_string+"'"+
                     ')'
                   };
                   html += '<li ' + drupalgap_attributes(attributes) + '>' +
@@ -11122,11 +11147,19 @@ function _taxonomy_field_widget_form_autocomplete(id, vid, list, e, data) {
  * @param {String} list_id The id of the list that holds the terms.
  * @param {Object} item The list item that was just clicked.
  */
-function _taxonomy_field_widget_form_click(id, list_id, item) {
+function _taxonomy_field_widget_form_click(id, list_id, item, existing_string) {
   try {
     var tid = $(item).attr('name');
-    $('#' + id).val(tid);
-    $(_taxonomy_field_widget_form_autocomplete_input).val($(item).attr('name'));
+    
+    var final_string = '';
+    if(existing_string && existing_string != ''){
+    	final_string = existing_string+tid;
+    }
+    else{
+    	final_string = tid;
+    }
+    $('#' + id).val(final_string);
+    
     $('#' + list_id).html('');
   }
   catch (error) { console.log('_taxonomy_field_widget_form_click - ' + error); }
