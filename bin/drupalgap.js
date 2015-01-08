@@ -7674,7 +7674,6 @@ function drupalgap_field_info_instances_add_to_form(entity_type, bundle,
         	  }
         	  
              //an object to store the taxonomy tid and name
-        	  var taxonomy_data = {};
         	  var tid;
         	  var term_name;
         	  
@@ -7705,8 +7704,7 @@ function drupalgap_field_info_instances_add_to_form(entity_type, bundle,
                 		  		default_value = tid; 
             		  		}
             		  		
-            		  		//store all tids and names in taxonomy_data
-            		  		taxonomy_data[term_name] = tid;
+         
             	  }
             	  
             	// If the default_value is null, set it to an empty string.
@@ -7714,27 +7712,20 @@ function drupalgap_field_info_instances_add_to_form(entity_type, bundle,
                   // @todo - It appears not all fields have a language code to use
                   // here, for example taxonomy term reference fields don't!
                   
-                  form.elements[name][language][delta] = {
-                    value: default_value,
-                    name: default_name,
-                    taxonomy_data:taxonomy_data
-                  };
-                  if(name =='field_tags'){
-                	  console.log('field tags name: '+name+' delta:'+delta+' language: '+language+' form.elements[name][language][delta].value: '+form.elements[name][language][delta].value);
+                  //need to find a better criteria to distinguish free tagging taxonomy field
+                  if(field.widget.module =='taxonomy'){
                 	  form.elements[name][language][delta] = {
                               value: default_name,
                               name: default_name,
-                              taxonomy_data:taxonomy_data
                             };
                   }
-                  else{
+                  else{//options select
                 	  form.elements[name][language][delta] = {
                               value: default_value,
                               name: default_name,
-                              taxonomy_data:taxonomy_data
                             };
                   }
-                  
+                  console.log('name: '+name+' delta:'+delta+' language: '+language+' form.elements[name][language][delta].value: '+form.elements[name][language][delta].value);
                   //need to create item content
                   var item = drupalgap_form_element_item_create(
                 		  name,
@@ -7769,12 +7760,11 @@ function drupalgap_field_info_instances_add_to_form(entity_type, bundle,
             }
         	
           }
-          else if(field_info.type == 'taxonomy_term_reference'){//not value, but need to create element item
+          else if(field_info.type == 'taxonomy_term_reference'){//no value, but need to create element item
         	  console.log('add item to taxonomy_term_reference field default_value: '+default_value);
         	  form.elements[name][language][0] = {
                       value: default_value,
                       name: default_name,
-                      taxonomy_data:{}
                     };
                     
                     //need to create item content
@@ -9674,6 +9664,7 @@ function node_page_view_pageshow(nid) {
   try {
     node_load(nid, {
         success: function(node) {
+        	
           // Build the node display.
           var build = {
             'theme': 'node',
@@ -11155,8 +11146,6 @@ function taxonomy_field_formatter_view(entity_type, entity, field, instance,
   catch (error) { console.log('taxonomy_field_formatter_view - ' + error); }
 }
 
-var taxonomy_data = null; 
-
 /**
  * Implements hook_field_widget_form().
  * @param {Object} form
@@ -11178,7 +11167,6 @@ function taxonomy_field_widget_form(form, form_state, field, instance, langcode,
     var list_id = items[delta].id + '-list';
     var text_input_id = items[delta].id + '-input';
     var taxonomy_term_name = items[delta].name;
-    taxonomy_data =  items[delta].taxonomy_data;
     
     var input_widget = {
     	theme:'textfield',
@@ -11241,7 +11229,7 @@ var _taxonomy_field_widget_form_autocomplete_input = null;
  * @param {String} text_input_id The id of the text input that will hold the term name.
  * @param {Object} e
  * @param {Object} data
- * @param {String} hidden data_id for storing taxonomy_data
+
  */
 function _taxonomy_field_widget_form_autocomplete(form_id, lng, element_name, delta, id, vid, list, text_input_id, e, data) {
 	//console.log('In _taxonomy_field_widget_form_autocomplete id: '+id+' vid: '+vid+' data.value: '+data.value+' list.html(): '+$(list).html());
@@ -11372,12 +11360,7 @@ function _taxonomy_field_widget_form_click(form_id, lng, delta, element_name, id
 	try {
     var tid = $(item).attr('tid');
     var value = $(item).attr('name');
-    //add current tid and name into taxonomy_data
-    
-    if(!taxonomy_data[value]){
-    	taxonomy_data[value] = tid;
-    }
-    
+   
     var final_string = '';
     if(existing_string && existing_string != ''){
     	final_string = existing_string+value;
@@ -11398,8 +11381,6 @@ function _taxonomy_field_widget_form_click(form_id, lng, delta, element_name, id
 		 }
 	 }
 	 
-   
-    
     //remove the dropdown
     $('#' + list_id).html('');
   }
