@@ -2355,7 +2355,6 @@ function drupalgap_render_page() {
               // @todo - each placeholder should have its own container div and
               // unique id.
               $.each(placeholders, function(index, placeholder) {
-            	  
                   var html = '';
                   if (output[placeholder]) {
                     // Grab the element variable from the output.
@@ -2412,9 +2411,7 @@ function drupalgap_render_page() {
       // unique id, similar to the placeholder div containers mentioned above.
  
       $.each(output, function(element, variables) {
-    	 
           if ($.inArray(element, render_variables) == -1) {
-        	  //console.log('element: '+element+' variables.theme: '+variables.theme);
             content += theme(variables.theme, variables);
           }
       });
@@ -3057,7 +3054,6 @@ function drupalgap_form_set_error(name, message) {
  * @return {Object}
  */
 function drupalgap_form_state_values_assemble(form) {
-	console.log('In drupalgap_form_state_values_assemble');
   try {
     var lng = language_default();
     var form_state = {'values': {}};
@@ -3082,9 +3078,6 @@ function drupalgap_form_state_values_assemble(form) {
                   id,
                   element
                 );
-          if(name == 'field_tags'){
-        	  console.log('field tags after getting values delta: '+delta+' value: '+item_value);
-          }
           
           if(item_value || item_value == ''){
         	  form_state.values[name][lng][delta] = item_value;
@@ -3121,7 +3114,6 @@ function drupalgap_form_state_values_assemble(form) {
  * @return {String|Number}
  */
 function _drupalgap_form_state_values_assemble_get_element_value(id, element) {
-console.log('In _drupalgap_form_state_values_assemble_get_element_value name: '+element.name);
   try {
     // If a value_callback is specified on the element, call that function to
     // retrieve the element's value. Ohterwise, we'll use the default techniques
@@ -3163,7 +3155,7 @@ console.log('In _drupalgap_form_state_values_assemble_get_element_value name: '+
     }
     
     if (value === null) { value = $(selector).val(); }
-    console.log('_drupalgap_form_state_values_assemble_get_element_value element name: '+element.name+' id: '+id+' value: '+value);
+    
     if (typeof value === 'undefined') { value = null; }
     
     return value;
@@ -3209,7 +3201,6 @@ function drupalgap_get_form(form_id) {
  * @return {Object}
  */
 function drupalgap_form_load(form_id) {
-	console.log('drupalgap_form_load');
   try {
 
     var form = drupalgap_form_defaults(form_id);
@@ -3470,7 +3461,6 @@ function _drupalgap_form_render_elements(form) {
                       content_weighted[weight] =
                       _drupalgap_form_render_element(form, element);
                      
-            	//console.log('name: '+name+' weight: '+weight);
             }
             else { content += _drupalgap_form_render_element(form, element); }
           }
@@ -3522,7 +3512,7 @@ function _drupalgap_form_render_element(form, element) {
     // Extract the element name.
     var name = element.name;
 
-    // Grab the language.
+    // Grab the language. What if the node is not in default language?
     var language = language_default();
     
 
@@ -3548,8 +3538,7 @@ function _drupalgap_form_render_element(form, element) {
       items = {0: element};
       module = drupalgap_form_element_get_module_name(element.type);
     }
-   
-   // console.log('name: '+name+' language: '+language+' is field: '+element.is_field+ ' module: '+module);
+ 
     if (module) {
       field_widget_form_function_name = module + '_field_widget_form';
 
@@ -3623,10 +3612,7 @@ function _drupalgap_form_render_element(form, element) {
         // If there wasn't a default value provided, set one. Then set the
         // default value into the variables' attributes. Although, if we have an
         // item value, just use that.
-        if(name == 'field_tags'){
-        	console.log('field tags delta: '+delta+' item value: '+item.value);
-        }
-        
+      
         if (!item.default_value) { item.default_value = ''; }
         variables.attributes.value = item.default_value;
         
@@ -3644,7 +3630,6 @@ function _drupalgap_form_render_element(form, element) {
         	}
         	// only attach the taxonomy_field_widget_form for the last delta
         	if(field_widget_form_function_name != 'taxonomy_field_widget_form' || delta == (items_length -1)){
-        		console.log('apply hook field function field_widget_form_function_name: '+field_widget_form_function_name+' delta: '+delta);
         		 field_widget_form_function.apply(
     		            null, [
     		              form,
@@ -3940,7 +3925,6 @@ function _drupalgap_form_element_items_widget_arguments(form, form_state,
  * @return {*}
  */
 function _drupalgap_form_submit(form_id) {
-	console.log('In _drupalgap_form_submit');
   try {
     // Load the form from local storage.
     var form = drupalgap_form_local_storage_load(form_id);
@@ -4323,7 +4307,6 @@ function theme_search(variables) {
  * @return {String}
  */
 function theme_select(variables) {
-	console.log('In theme_select variables.value: '+variables.value);
 	try {
 	    var options = '';
 	    var id = variables.attributes['id'];
@@ -4337,16 +4320,13 @@ function theme_select(variables) {
 	          var selected = '';
 	          //support multivalue select
 	          if(variables.value && typeof variables.value === 'object'){
-	        	  console.log('is array ');
 	        	  $.each(variables.value, function(index, val){
-	        		  console.log('value: '+val);
 	        		  if(val == value){
 	        			 selected = ' selected '; 
 	        		  }
 	        	  });
 	          }
 	          else if(variables.value){//not array
-	        	  console.log('not array ');
 	        	  if (variables.value == value) {
 	                  selected = ' selected ';
 	                } 
@@ -4360,7 +4340,6 @@ function theme_select(variables) {
 	   var html = '<select ' + drupalgap_attributes(variables.attributes) + '>' +
 	   options +
 	   '</select>';
-	   //console.log('select html: '+html);
 	    return '<select '+ drupalgap_attributes(variables.attributes) + '>' +
 	      options +
 	    '</select>';
@@ -4643,7 +4622,6 @@ function menu_router_build() {
         menu_links = fn();
         // Iterate over each item.
         $.each(menu_links, function(path, menu_item) {
-        	//console.log('menu path: '+path);
             // Attach module name to item.
             menu_item.module = module;
             // Set a default type for the item if one isn't provided.
@@ -4682,7 +4660,6 @@ function menu_router_build() {
  * @return {String}
  */
 function drupalgap_get_menu_link_router_path(path) {
-	//console.log('In drupalgap_get_menu_link_router_path: '+path);
   try {
 
     // @TODO - Why is this function called twice sometimes? E.G. via an MVC item
@@ -4788,7 +4765,6 @@ function drupalgap_get_menu_link_router_path(path) {
     // If there isn't a router and we couldn't find one, we'll just route
     // to the path itself.
     if (!router_path) { router_path = path; }
-    //console.log('before return path: '+path);
     // Finally, return the router path.
     return router_path;
   }
@@ -6519,8 +6495,6 @@ function drupalgap_entity_add_core_fields_to_form(entity_type, bundle,
       var default_value = field.default_value;
       if (entity && entity[name]) { default_value = entity[name]; }
       
-      console.log('add core field name: '+name+' default_value: '+default_value);
-      
       form.elements[name] = field;
       form.elements[name].default_value = default_value;
     });
@@ -6827,9 +6801,6 @@ function drupalgap_entity_build_from_form_state(form, form_state) {
     
     $.each(form_state.values, function(name, value) {
     	//for some reason the field_tags field has language en
-    	if(name == 'field_tags'){
-    		entity_language = 'en';
-    	}
 
         // Determine wether or not this element is a field. If it is, determine
         // it's module and field assembly hook.
@@ -6859,10 +6830,6 @@ function drupalgap_entity_build_from_form_state(form, form_state) {
           // Make sure there is at least one value before creating the form
           // element on the entity.
           if (typeof value[language][0] === 'undefined') { return; }
-          if(name == 'field_tags'){
-        	  console.log('name: '+name+' value[language]: '+value[language]+' value[language][0]: '+value[language][0]);
-          }
-          
           
           //unlimited values equal to the number of values in the form_state
           if (allowed_values == -1) { 
@@ -6918,10 +6885,6 @@ function drupalgap_entity_build_from_form_state(form, form_state) {
 
               // Extract the value.
               var field_value = value[language][delta];
-              if(name == 'field_tags'){
-            	  console.log('field name: '+name+' delta: '+delta+' field value: '+field_value);
-              }
-              
 
               // By default, we'll assume we'll be attaching this element item's
               // value according to a key (usually 'value' is the default key
@@ -6971,7 +6934,6 @@ function drupalgap_entity_build_from_form_state(form, form_state) {
               // and value onto the field to indicate the delta.
               if (!field_key.use_delta) {
                 if (!field_key.use_wrapper) {
-                	console.log('no delta wrapper name: '+name);
                   entity[name][entity_language] = field_value;
                 }
                 else {
@@ -6995,7 +6957,6 @@ function drupalgap_entity_build_from_form_state(form, form_state) {
                   entity[name][entity_language].push(item);
                 }
                 else {
-                	console.log('yes delta no key name: '+name);
                   entity[name][entity_language].push(field_value);
                 }
               }
@@ -7109,7 +7070,7 @@ function drupalgap_entity_form_submit(form, form_state, entity) {
     var fn = window[
       services_get_resource_function_for_entity(form.entity_type, crud)
     ];
-    console.log('before calling resource function fn: '+fn);
+    
     fn(entity, call_arguments);
   }
   catch (error) { console.log('drupalgap_entity_form_submit - ' + error); }
@@ -7614,14 +7575,18 @@ function drupalgap_field_info_instances_add_to_form(entity_type, bundle,
     // If there is no bundle, pull the fields out of the wrapper.
     //if (!bundle) { fields = fields[entity_type]; }
     // Use the default language, unless the entity has one specified.
+    
+    //use default language for the form elements
     var language = language_default();
-   // if (entity && entity.language) { language = entity.language; }
+    //if (entity && entity.language) { default_language = entity.language; }
     // Iterate over each field in the entity and add it to the form. If there is
     // a value present in the entity, then set the field's form element default
     // value equal to the field value.
+    //use entity language to get element values
+    var entity_language;
     if (fields) {
       $.each(fields, function(name, field) {
-    	  
+    	  entity_language = entity.language;;
         // The user registration form is a special case, in that we only want
         // to place fields that are set to display on the user registration
         // form. Skip any fields not set to display.
@@ -7638,16 +7603,14 @@ function drupalgap_field_info_instances_add_to_form(entity_type, bundle,
             'description': field.description
           };
           
-          
+        //some entity has language but the fields still have language 'und'. Determine what language is the filed in
+          if(entity && entity[name]){
+        	  if(!entity[name][entity_language] && entity[name]['und']){
+        		  entity_language = 'und';
+        	  }
+          }
           if (!form.elements[name][language]) {
             form.elements[name][language] = {};
-          }
-          
-          //for some reason, one of the taxonomy fields has language diferent form the rest of the fields in the node
-          var entity_language = language;
-          if(name == 'field_tags'){
-        	  entity_language = 'en';
-        	  
           }
           
           var default_value = field.default_value;
@@ -7664,14 +7627,13 @@ function drupalgap_field_info_instances_add_to_form(entity_type, bundle,
         	  default_value = '';
           }
           var default_name = '';
+          
           if (entity && entity[name] && entity[name][entity_language] && entity[name][entity_language].length != 0) {
         	//In the multi-value case, set cardinality to the number of values in the entity
         	  if(cardinality == -1){
             	  cardinality = entity[name][entity_language].length;
               }
-        	  if(name=='field_tags'){
-        		  console.log('entity has values name: '+name+' language: '+language+' type: '+field_info.type+' cardinality: '+cardinality );  
-        	  }
+        	
         	  
              //an object to store the taxonomy tid and name
         	  var tid;
@@ -7725,7 +7687,7 @@ function drupalgap_field_info_instances_add_to_form(entity_type, bundle,
                               name: default_name,
                             };
                   }
-                  console.log('name: '+name+' delta:'+delta+' language: '+language+' form.elements[name][language][delta].value: '+form.elements[name][language][delta].value);
+                
                   //need to create item content
                   var item = drupalgap_form_element_item_create(
                 		  name,
@@ -7735,13 +7697,13 @@ function drupalgap_field_info_instances_add_to_form(entity_type, bundle,
                         );
                   //merge the default values into the pre existing item on the element.
                   $.extend(true, form.elements[name][language][delta], item);
-                  //console.log('after set default value name: '+name+' language: '+language+' default value: '+default_value+' default_tid: '+default_tid);
               }
               else{//other fields
+            	  
             	  if (entity[name][entity_language][delta] &&
                       typeof entity[name][entity_language][delta].value !== 'undefined'
                     ) { default_value = entity[name][entity_language][delta].value; }
-                    
+            	  
             	// If the default_value is null, set it to an empty string.
                   if (default_value == null) { default_value = ''; }
                   // @todo - It appears not all fields have a language code to use
@@ -7757,11 +7719,11 @@ function drupalgap_field_info_instances_add_to_form(entity_type, bundle,
                 form.elements[name][language][delta].item =
                   entity[name][entity_language][delta];
               }
+              
             }
         	
           }
           else if(field_info.type == 'taxonomy_term_reference'){//no value, but need to create element item
-        	  console.log('add item to taxonomy_term_reference field default_value: '+default_value);
         	  form.elements[name][language][0] = {
                       value: default_value,
                       name: default_name,
@@ -8149,7 +8111,7 @@ function options_field_widget_form(form, form_state, field, instance, langcode,
           });
           var text = '';
           //only show the help if there is no value in the item
-          console.log('theme select value: '+items[delta].value);
+          
           if (items[delta].required && !items[delta].value) { 
         	  text = '- Select a value -'; 
         	  items[delta].children[0].options = { '': text };
@@ -9674,8 +9636,6 @@ function node_page_view_pageshow(nid) {
             'title': {'markup': node.title},
             'content': {'markup': node.content}
           };
-         //node.content is empty
-          console.log('node.content: '+node.content);
           // If the comments are closed (1) or open (2), show the comments.
           if (node.comment != 0) {
             if (node.comment == 1 || node.comment == 2) {
@@ -9741,7 +9701,6 @@ function node_page_view_pageshow(nid) {
           else {
             // Comments are hidden (0), append an empty comments wrapper to the
             // content and inject the content into the page.
-        	 
             build.content.markup += theme('comments', { node: node });
             _drupalgap_entity_page_container_inject(
               'node', node.nid, 'view', build
@@ -11160,7 +11119,6 @@ function taxonomy_field_formatter_view(entity_type, entity, field, instance,
 function taxonomy_field_widget_form(form, form_state, field, instance, langcode,
   items, delta, element) {
   try {
-	  console.log('taxonomy_field_widget_form form id: '+form.id);
     items[delta].type = 'hidden';
     // Build the widget and attach it to the item.
     var item_id = items[delta].id;
@@ -11187,7 +11145,6 @@ function taxonomy_field_widget_form(form, form_state, field, instance, langcode,
       },
     };
     
-    console.log('delta: '+delta+' items[delta].id: '+items[delta].id+' items[delta].value: '+items[delta].value+' taxonomy_term_name: '+taxonomy_term_name);
     items[delta].children.push(input_widget);
     items[delta].children.push(widget);
     
@@ -11232,7 +11189,6 @@ var _taxonomy_field_widget_form_autocomplete_input = null;
 
  */
 function _taxonomy_field_widget_form_autocomplete(form_id, lng, element_name, delta, id, vid, list, text_input_id, e, data) {
-	//console.log('In _taxonomy_field_widget_form_autocomplete id: '+id+' vid: '+vid+' data.value: '+data.value+' list.html(): '+$(list).html());
   try {
     // Setup the vars to handle this widget.
     var $ul = $(list),
@@ -11240,7 +11196,7 @@ function _taxonomy_field_widget_form_autocomplete(form_id, lng, element_name, de
         input_string = data.value,
         value = data.value,
         html = '';
-      console.log('value: '+value);
+      
     // Save a reference to this text input field. Then attach an on change
     // handler that will set the hidden input's value when the text field
     // changes. Keep in mind, later on we listen for clicks on autocomplete
@@ -11250,7 +11206,6 @@ function _taxonomy_field_widget_form_autocomplete(form_id, lng, element_name, de
     var all_terms = null;
     $(_taxonomy_field_widget_form_autocomplete_input).on('change', function() {
     	var input_value = $(this).val();
-    	console.log('on input change this.val(): '+input_value);
         $('#' + text_input_id).val(input_value);
         //populate final value in the 0 delta item
         var item_id = drupalgap_form_get_element_id(element_name, form_id, lng, 0);
@@ -11298,9 +11253,7 @@ function _taxonomy_field_widget_form_autocomplete(form_id, lng, element_name, de
                   //we don't want terms already in the field
             	  if(existing_terms){
             		  $.each(existing_terms, function(index, term){
-                        	console.log('term: '+term);
                   		  if(object.term.name == term){
-                  			  console.log('term is value ');
                   			  new_term = false;
                   			  return false;
                   		  }
@@ -11356,7 +11309,6 @@ function _taxonomy_field_widget_form_autocomplete(form_id, lng, element_name, de
  */
 function _taxonomy_field_widget_form_click(form_id, lng, delta, element_name, id, list_id, item, existing_string) {
 
-	console.log('_taxonomy_field_widget_form_click existing_string: '+existing_string);
 	try {
     var tid = $(item).attr('tid');
     var value = $(item).attr('name');
@@ -11368,7 +11320,6 @@ function _taxonomy_field_widget_form_click(form_id, lng, delta, element_name, id
     else{
     	final_string = value;
     }
-    console.log('final_string: '+final_string);
     //put final values in the first delta
     var item_id = drupalgap_form_get_element_id(element_name, form_id, lng, 0);
 	 $('#' + item_id).val(final_string);
